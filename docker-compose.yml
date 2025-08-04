@@ -52,6 +52,19 @@ services:
     networks:
       - app-network
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: 1234
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+    restart: always
+
 networks:
   app-network:
     driver: bridge

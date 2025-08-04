@@ -60,6 +60,17 @@ http://localhost:3000
 - Username: root
 - Password: 1234
 
+### دسترسی به phpMyAdmin
+
+برای مدیریت دیتابیس می‌توانید از phpMyAdmin استفاده کنید:
+
+- در محیط local: http://localhost/phpmyadmin
+- در محیط production: https://ahmadreza-avandi.ir/phpmyadmin
+
+اطلاعات ورود:
+- Username: root
+- Password: 1234
+
 ## بازسازی دیتابیس
 
 اگر نیاز به بازسازی کامل دیتابیس دارید:
