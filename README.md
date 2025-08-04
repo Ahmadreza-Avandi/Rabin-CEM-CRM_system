@@ -87,3 +87,45 @@ docker volume prune -f
 # راه‌اندازی مجدد
 docker-compose up --build
 ```
+
+## راه‌اندازی روی سرور
+
+### 1. نصب پیش‌نیازها روی سرور
+
+```bash
+# نصب Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# نصب Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# نصب Certbot برای SSL
+sudo apt-get update
+sudo apt-get install certbot
+```
+
+### 2. تنظیم SSL برای دامنه
+
+```bash
+# دریافت و نصب SSL
+sudo certbot certonly --standalone -d ahmadreza-avandi.ir -d www.ahmadreza-avandi.ir
+```
+
+### 3. راه‌اندازی پروژه
+
+```bash
+# کلون پروژه
+git clone https://github.com/Ahmadreza-Avandi/Rabin-CEM-CRM_system.git
+cd Rabin-CEM-CRM_system
+
+# راه‌اندازی کانتینرها
+docker-compose up -d --build
+```
+
+بعد از اجرای این دستورات، سایت باید از طریق دامنه‌های زیر در دسترس باشد:
+- http://ahmadreza-avandi.ir
+- https://ahmadreza-avandi.ir
+- http://www.ahmadreza-avandi.ir
+- https://www.ahmadreza-avandi.ir
