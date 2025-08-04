@@ -227,7 +227,7 @@ export default function TasksPage() {
     };
 
     const handleAddTask = async () => {
-        if (!newTask.title || newTask.assigned_to.length === 0 || !newTask.due_date || !newTask.stages?.length) {
+        if (!newTask.title || !newTask.assigned_to || newTask.assigned_to.length === 0 || !newTask.due_date || !newTask.stages?.length) {
             toast({
                 title: "خطا",
                 description: "لطفاً تمام فیلدهای الزامی را پر کنید",
