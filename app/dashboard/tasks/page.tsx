@@ -92,12 +92,12 @@ export default function TasksPage() {
     const [newTask, setNewTask] = useState<CreateTaskInput>({
         title: '',
         description: '',
-        assigned_to: [],
+        assigned_to: [] as string[],
         priority: 'medium',
         due_date: '',
-        stages: [],
+        stages: [] as TaskStage[],
         status: 'pending'
-    } as CreateTaskInput);
+    });
 
     // Fetch current user info
     useEffect(() => {
@@ -547,10 +547,13 @@ export default function TasksPage() {
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium font-vazir">محول به *</label>
                                     <Select
-                                        value={newTask.assigned_to.length > 0 ? newTask.assigned_to[0] : ''}
+                                        value={newTask.assigned_to && newTask.assigned_to.length > 0 ? newTask.assigned_to[0] : ''}
                                         onValueChange={(value) => {
-                                            if (value && !newTask.assigned_to.includes(value)) {
-                                                setNewTask({ ...newTask, assigned_to: [...newTask.assigned_to, value] });
+                                            if (value) {
+                                                const currentAssigned = newTask.assigned_to || [];
+                                                if (!currentAssigned.includes(value)) {
+                                                    setNewTask({ ...newTask, assigned_to: [...currentAssigned, value] });
+                                                }
                                             }
                                         }}
                                     >
@@ -656,7 +659,7 @@ export default function TasksPage() {
                                     </Button>
                                     <Button
                                         onClick={handleAddTask}
-                                        disabled={!newTask.title || newTask.assigned_to.length === 0 || !newTask.due_date}
+                                        disabled={!newTask.title || !newTask.assigned_to?.length || !newTask.due_date}
                                         className="font-vazir bg-primary text-primary-foreground hover:bg-primary/90"
                                     >
                                         ایجاد وظیفه
