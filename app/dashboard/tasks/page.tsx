@@ -581,7 +581,7 @@ export default function TasksPage() {
                                     </Select>
 
                                     {/* نمایش کاربران انتخاب شده */}
-                                    {newTask.assigned_to.length > 0 && (
+                                    {newTask.assigned_to && newTask.assigned_to.length > 0 && (
                                         <div className="flex flex-wrap gap-2 mt-2">
                                             {newTask.assigned_to.map(userId => {
                                                 const user = users.find(u => u.id === userId);
@@ -594,7 +594,7 @@ export default function TasksPage() {
                                                             className="h-4 w-4 p-0 mr-1"
                                                             onClick={() => setNewTask({
                                                                 ...newTask,
-                                                                assigned_to: newTask.assigned_to.filter(id => id !== userId)
+                                                                assigned_to: newTask.assigned_to?.filter(id => id !== userId) || []
                                                             })}
                                                         >
                                                             <X className="h-3 w-3" />
@@ -621,7 +621,7 @@ export default function TasksPage() {
                                         </Button>
                                     </div>
 
-                                    {newTask.stages?.length > 0 && (
+                                    {newTask.stages && newTask.stages.length > 0 && (
                                         <div className="space-y-2 mb-4">
                                             {newTask.stages.map((stage, index) => (
                                                 <div key={stage.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
@@ -636,7 +636,7 @@ export default function TasksPage() {
                                                             onClick={() => {
                                                                 setNewTask({
                                                                     ...newTask,
-                                                                    stages: newTask.stages.filter(s => s.id !== stage.id)
+                                                                    stages: newTask.stages?.filter(s => s.id !== stage.id) || []
                                                                 });
                                                             }}
                                                         >
