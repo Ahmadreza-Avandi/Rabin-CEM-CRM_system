@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { executeQuery, executeSingle } from '@/lib/database';
 
-// Generate UUID function
-const generateUUID = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-};
-
 // GET /api/contacts - Get all contacts
 export async function GET(req: NextRequest) {
   try {
@@ -19,15 +11,42 @@ export async function GET(req: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
 
     let query = `
-            SELECT
-                c.*,
-                cust.name as company_name,
+            SELECT DISTINCT
+                c.id,
+                c.company_id,
+                c.first_name,
+                c.last_name,
+                c.full_name,
+                c.job_title,
+                c.department,
+                c.email,
+                c.phone,
+                c.mobile,
+                c.linkedin_url,
+                c.twitter_url,
+                c.address,
+                c.city,
+                c.country,
+                c.postal_code,
+                c.notes,
+                c.tags,
+                c.custom_fields,
+                c.avatar_url,
+                c.status,
+                c.is_primary,
+                c.source,
+                c.last_contact_date,
+                c.assigned_to,
+                c.created_by,
+                c.created_at,
+                c.updated_at,
+                cust.name as customer_name,
                 cust.industry as company_industry,
-                cust.segment as company_size,
+                cust.segment as company_segment,
                 cust.status as company_status,
                 u.name as assigned_user_name
             FROM contacts c
-            LEFT JOIN customers cust ON c.company_id = cust.id
+            LEFT JOIN customers cust ON c.company_id = cust.id 
             LEFT JOIN users u ON c.assigned_to = u.id
             WHERE 1=1
         `;
@@ -51,24 +70,44 @@ export async function GET(req: NextRequest) {
     query += ' ORDER BY c.first_name ASC, c.last_name ASC LIMIT ? OFFSET ?';
     params.push(limit, offset);
 
+    console.log('Executing query:', query); // اضافه کردن لاگ برای دیباگ
+    console.log('With params:', params); // اضافه کردن لاگ برای دیباگ
+
     const contacts = await executeQuery(query, params);
 
-    // Transform the data to include company object
+    console.log('Query result:', contacts); // اضافه کردن لاگ برای دیباگ
+
+    // Transform the data for customer club compatibility
     const transformedContacts = contacts.map(contact => ({
-      ...contact,
-      company: contact.company_name ? {
+      id: contact.id,
+      company_id: contact.company_id,
+      first_name: contact.first_name,
+      last_name: contact.last_name,
+      name: contact.full_name || `${contact.first_name} ${contact.last_name}`.trim(),
+      job_title: contact.job_title,
+      department: contact.department,
+      email: contact.email,
+      phone: contact.phone,
+      mobile: contact.mobile,
+      customer_id: contact.company_id,
+      role: contact.job_title || 'مخاطب',
+      type: contact.company_segment || 'individual',
+      company: contact.customer_name ? {
         id: contact.company_id,
-        name: contact.company_name,
+        name: contact.customer_name,
         industry: contact.company_industry,
-        size: contact.company_size,
+        size: contact.company_segment,
         status: contact.company_status
       } : null,
-      // Remove the flattened company fields
-      company_name: undefined,
-      company_industry: undefined,
-      company_size: undefined,
-      company_status: undefined
+      status: contact.status,
+      source: contact.source,
+      created_at: contact.created_at,
+      updated_at: contact.updated_at,
+      assigned_to: contact.assigned_to,
+      assigned_user_name: contact.assigned_user_name
     }));
+
+    console.log('Transformed contacts:', transformedContacts); // اضافه کردن لاگ برای دیباگ
 
     return NextResponse.json({
       success: true,
@@ -87,31 +126,25 @@ export async function GET(req: NextRequest) {
 // POST /api/contacts - Create a new contact
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const currentUserId = req.headers.get('x-user-id');
+    const data = await req.json();
     const {
-      customer_id: rawCustomerId,
-      company_id: rawCompanyId, // Support both names for backward compatibility
+      company_id = null,
       first_name,
       last_name,
-      job_title,
-      department,
-      email,
-      phone,
-      mobile,
-      linkedin_url,
-      twitter_url,
-      address,
-      city,
-      country = 'ایران',
-      source = 'other',
-      notes
-    } = body;
+      job_title = null,
+      department = null,
+      email = null,
+      phone = null,
+      mobile = null,
+      linkedin_url = null,
+      twitter_url = null,
+      address = null,
+      city = null,
+      country = null,
+      source = 'other'
+    } = data;
 
-    // Handle individual contacts - support both customer_id and company_id
-    const finalCompanyId = rawCustomerId || rawCompanyId;
-    const company_id = (finalCompanyId === 'individual' || !finalCompanyId) ? null : finalCompanyId;
-
-    // Validation
     if (!first_name || !last_name) {
       return NextResponse.json(
         { success: false, message: 'نام و نام خانوادگی الزامی است' },
@@ -119,41 +152,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if email already exists (if provided)
-    if (email) {
-      const existingContact = await executeQuery(
-        'SELECT id FROM contacts WHERE email = ?',
-        [email]
-      );
-
-      if (existingContact.length > 0) {
-        return NextResponse.json(
-          { success: false, message: 'مخاطبی با این ایمیل قبلاً ثبت شده است' },
-          { status: 400 }
-        );
-      }
-    }
-
-    const contactId = generateUUID();
-    // Format date for MySQL compatibility (YYYY-MM-DD HH:MM:SS)
+    const id = 'cnt-' + Date.now().toString(36);
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    // Get current user from headers (if available)
-    const currentUserId = req.headers.get('x-user-id');
+    // Log the values before insertion for debugging
+    console.log('Inserting contact with values:', {
+      id, company_id, first_name, last_name, job_title, department,
+      email, phone, mobile, linkedin_url, twitter_url,
+      address, city, country, source, currentUserId, now
+    });
 
-    // If no current user, use the first available user as fallback
-    let createdBy = currentUserId;
-    if (!createdBy) {
-      const firstUsers = await executeQuery('SELECT id FROM users LIMIT 1');
-      if (firstUsers && firstUsers.length > 0) {
-        createdBy = firstUsers[0].id;
-      } else {
-        // If no users exist, create a system user
-        createdBy = 'system-user';
-      }
-    }
-
-    const result = await executeSingle(`
+    await executeSingle(`
             INSERT INTO contacts (
                 id, company_id, first_name, last_name, job_title, department,
                 email, phone, mobile, linkedin_url, twitter_url,
@@ -161,29 +170,16 @@ export async function POST(req: NextRequest) {
                 assigned_to, created_by, created_at, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', false, ?, ?, ?, ?)
         `, [
-      contactId, company_id, first_name, last_name, job_title || null, department || null,
-      email || null, phone || null, mobile || null, linkedin_url || null, twitter_url || null,
-      address || null, city || null, country, source, currentUserId || null, createdBy, now, now
+      id, company_id, first_name, last_name, job_title, department,
+      email, phone, mobile, linkedin_url, twitter_url,
+      address, city, country, source,
+      currentUserId, currentUserId, now, now
     ]);
-
-    // If notes provided, create an activity record
-    if (notes) {
-      const activityId = generateUUID();
-      await executeSingle(`
-                INSERT INTO contact_activities (
-                    id, contact_id, company_id, activity_type, title, description,
-                    status, priority, assigned_to, created_by, created_at, updated_at
-                ) VALUES (?, ?, ?, 'note', 'یادداشت اولیه', ?, 'completed', 'low', ?, ?, ?, ?)
-            `, [
-        activityId, contactId, company_id, notes,
-        currentUserId || null, createdBy, now, now
-      ]);
-    }
 
     return NextResponse.json({
       success: true,
-      message: 'مخاطب با موفقیت اضافه شد',
-      data: { id: contactId }
+      message: 'مخاطب با موفقیت ایجاد شد',
+      data: { id }
     });
 
   } catch (error) {
@@ -195,11 +191,11 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT /api/contacts - Update a contact
+// PUT /api/contacts/:id - Update a contact
 export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { id, ...updateData } = body;
+    const id = new URL(req.url).searchParams.get('id');
+    const updateData = await req.json();
 
     if (!id) {
       return NextResponse.json(
@@ -242,7 +238,6 @@ export async function PUT(req: NextRequest) {
     }
 
     updateFields.push('updated_at = ?');
-    // Format date for MySQL compatibility
     updateValues.push(new Date().toISOString().slice(0, 19).replace('T', ' '));
     updateValues.push(id);
 
@@ -265,12 +260,10 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE /api/contacts - Delete a contact
+// DELETE /api/contacts/:id - Delete a contact
 export async function DELETE(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-
+    const id = new URL(req.url).searchParams.get('id');
     if (!id) {
       return NextResponse.json(
         { success: false, message: 'شناسه مخاطب الزامی است' },
@@ -287,7 +280,7 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Delete the contact (this will cascade delete activities due to foreign key)
+    // For now, we'll use regular delete since soft delete is not implemented yet
     await executeSingle('DELETE FROM contacts WHERE id = ?', [id]);
 
     return NextResponse.json({

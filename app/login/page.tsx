@@ -94,7 +94,7 @@ export default function LoginPage() {
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4 }}
                     >
-                        سیستم مدیریت ارتباط با مشتریان
+                        شرکت رابین تجارت خاورمیانه
                     </motion.p>
                 </motion.div>
 

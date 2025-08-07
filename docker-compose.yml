@@ -65,9 +65,22 @@ services:
       - app-network
     restart: always
 
+  backup:
+    build:
+      context: ./backup
+      dockerfile: Dockerfile.backup
+    volumes:
+      - backup_data:/backups
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+    restart: always
+
 networks:
   app-network:
     driver: bridge
 
 volumes:
   mysql_data: {}
+  backup_data: {}

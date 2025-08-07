@@ -39,13 +39,14 @@ export async function GET(req: NextRequest) {
 
         const userRole = currentUsers[0].role;
 
-        // Check permissions - only managers/CEO can view all users
-        if (!hasPermission(userRole, ['ceo', 'مدیر', 'sales_manager', 'مدیر فروش'])) {
-            return NextResponse.json(
-                { success: false, message: 'عدم دسترسی' },
-                { status: 403 }
-            );
-        }
+        // For chat functionality, allow all authenticated users to see other users
+        // Check permissions - allow all active users to view users for chat
+        // if (!hasPermission(userRole, ['ceo', 'مدیر', 'sales_manager', 'مدیر فروش'])) {
+        //     return NextResponse.json(
+        //         { success: false, message: 'عدم دسترسی' },
+        //         { status: 403 }
+        //     );
+        // }
 
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
@@ -79,11 +80,11 @@ export async function GET(req: NextRequest) {
 
         const users = await executeQuery(query, params);
 
-        // Add random online status for demo (in real app, this would come from session tracking)
+        // Add online status based on last_active (simplified for chat)
         const usersWithStatus = users.map(user => ({
             ...user,
             avatar: user.avatar_url, // Map avatar_url to avatar for frontend compatibility
-            status: Math.random() > 0.3 ? 'online' : (Math.random() > 0.5 ? 'away' : 'offline')
+            status: user.status === 'active' ? 'online' : 'offline' // Simplified status for chat
         }));
 
         return NextResponse.json({

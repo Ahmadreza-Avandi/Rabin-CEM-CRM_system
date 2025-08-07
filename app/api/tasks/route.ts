@@ -3,6 +3,10 @@ import { executeQuery, executeSingle } from '@/lib/database';
 import { getUserFromToken, verifyToken } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 
+// Import notification services
+const notificationService = require('@/lib/notification-service.js');
+const internalNotificationSystem = require('@/lib/notification-system.js');
+
 // GET /api/tasks - Get all tasks
 export async function GET(req: NextRequest) {
   try {
@@ -199,6 +203,55 @@ export async function POST(req: NextRequest) {
         INSERT INTO task_assignees (id, task_id, user_id, assigned_by)
         VALUES (?, ?, ?, ?)
       `, [uuidv4(), taskId, userId, user.id]);
+    }
+
+    // Send notification emails and internal notifications to assigned users (async, don't wait for them)
+    for (const userId of assigned_to) {
+      try {
+        const assignedUsers = await executeQuery(`
+          SELECT email, name FROM users WHERE id = ? AND status = 'active'
+        `, [userId]);
+
+        if (assignedUsers.length > 0) {
+          const assignedUser = assignedUsers[0];
+          const taskData = {
+            id: taskId,
+            title,
+            description,
+            priority: priority || 'medium',
+            category: category || 'follow_up',
+            due_date: formattedDueDate
+          };
+
+          // Send email notification
+          notificationService.sendTaskAssignmentEmail(assignedUser.email, assignedUser.name, taskData)
+            .then((emailResult: any) => {
+              if (emailResult.success) {
+                console.log('✅ Task assignment email sent to:', assignedUser.email);
+              } else {
+                console.log('⚠️ Task assignment email failed:', emailResult.error);
+              }
+            })
+            .catch((error: any) => {
+              console.error('❌ Task assignment email error:', error);
+            });
+
+          // Send internal notification
+          internalNotificationSystem.notifyTaskAssigned(taskData, userId)
+            .then((notifResult: any) => {
+              if (notifResult.success) {
+                console.log('✅ Internal task notification sent to user:', userId);
+              } else {
+                console.log('⚠️ Internal task notification failed:', notifResult.error);
+              }
+            })
+            .catch((error: any) => {
+              console.error('❌ Internal task notification error:', error);
+            });
+        }
+      } catch (error) {
+        console.error('❌ Error getting assigned user info:', error);
+      }
     }
 
     return NextResponse.json({

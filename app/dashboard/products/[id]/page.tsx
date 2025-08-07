@@ -39,7 +39,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         <CardTitle className="font-vazir text-xl text-red-500">محصول یافت نشد</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Link href="/dashboard/projects">
+                        <Link href="/dashboard/products">
                             <Button variant="outline" className="font-vazir">بازگشت به لیست محصولات</Button>
                         </Link>
                     </CardContent>
@@ -62,7 +62,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         <span className="text-xs text-accent font-vazir">شرکت: {product.company}</span>
                         <span className="text-xs text-muted-foreground">نسخه: {product.version}</span>
                     </div>
-                    <Link href="/dashboard/projects">
+                    <Link href="/dashboard/products">
                         <Button variant="outline" className="font-vazir mt-6">بازگشت به لیست محصولات</Button>
                     </Link>
                 </CardContent>

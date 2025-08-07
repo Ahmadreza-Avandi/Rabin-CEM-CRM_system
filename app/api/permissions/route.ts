@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
                 { id: '18', name: 'customer_health', display_name: 'سلامت مشتری', route: '/dashboard/customer-health', icon: 'Activity', sort_order: 18 },
                 { id: '19', name: 'alerts', display_name: 'هشدارها', route: '/dashboard/alerts', icon: 'Activity', sort_order: 19 },
                 { id: '20', name: 'voice_of_customer', display_name: 'صدای مشتری (VOC)', route: '/dashboard/voice-of-customer', icon: 'MessageCircle', sort_order: 20 },
-                { id: '21', name: 'projects', display_name: 'پروژه‌ها', route: '/dashboard/projects', icon: 'Briefcase', sort_order: 21 },
+
                 { id: '22', name: 'tasks', display_name: 'وظایف', route: '/dashboard/tasks', icon: 'CheckCircle', sort_order: 22 },
                 { id: '23', name: 'calendar', display_name: 'تقویم', route: '/dashboard/calendar', icon: 'Calendar', sort_order: 23 },
                 { id: '24', name: 'reports', display_name: 'گزارش‌ها', route: '/dashboard/reports', icon: 'BarChart3', sort_order: 24 },

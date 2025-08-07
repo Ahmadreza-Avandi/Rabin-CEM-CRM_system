@@ -41,7 +41,7 @@ export default function AddProductPage() {
                             <Input id="company" value={company} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCompany(e.target.value)} className="mt-2" />
                         </div>
                         <div className="flex justify-between mt-8">
-                            <Link href="/dashboard/projects">
+                            <Link href="/dashboard/products">
                                 <Button variant="outline" className="font-vazir">بازگشت</Button>
                             </Link>
                             <Button type="submit" className="font-vazir">ثبت محصول</Button>

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { loginUser } from '@/lib/auth';
 
+// Import notification service
+const notificationService = require('@/lib/notification-service.js');
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -29,6 +32,21 @@ export async function POST(req: NextRequest) {
         maxAge: 7 * 24 * 60 * 60, // 7 days
         path: '/',
       });
+
+      // Send welcome email notification (async, don't wait for it)
+      if (result.user) {
+        notificationService.sendWelcomeEmail(result.user.email, result.user.name)
+          .then((emailResult: any) => {
+            if (emailResult.success) {
+              console.log('✅ Welcome email sent for login:', result.user.email);
+            } else {
+              console.log('⚠️ Welcome email failed:', emailResult.error);
+            }
+          })
+          .catch((error: any) => {
+            console.error('❌ Welcome email error:', error);
+          });
+      }
 
       return response;
     } else {

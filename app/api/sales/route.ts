@@ -3,6 +3,10 @@ import { executeQuery, executeSingle } from '@/lib/database';
 import { hasPermission } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 
+// Import notification services
+const notificationService = require('@/lib/notification-service.js');
+const internalNotificationSystem = require('@/lib/notification-system.js');
+
 // Utility function to format currency
 const formatCurrency = (amount: number, currency: string = 'IRR') => {
     if (currency === 'IRR') {
@@ -323,6 +327,46 @@ export async function POST(req: NextRequest) {
             `فروش با شماره فاکتور ${invoice_number || 'نامشخص'} ثبت شد`,
             finalUserId
         ]);
+
+        // Send notification email and internal notification to CEO (async, don't wait for it)
+        const saleData = {
+            id: saleId,
+            total_amount,
+            currency,
+            customer_name: customer?.name || 'نامشخص',
+            sales_person_name: userName,
+            payment_status,
+            payment_method,
+            invoice_number,
+            notes
+        };
+
+        // Send email notification to CEO
+        notificationService.sendSaleNotificationToCEO(saleData)
+            .then((emailResult: any) => {
+                if (emailResult.success) {
+                    console.log('✅ Sale notification email sent to CEO');
+                } else {
+                    console.log('⚠️ Sale notification email failed:', emailResult.error);
+                }
+            })
+            .catch((error: any) => {
+                console.error('❌ Sale notification email error:', error);
+            });
+
+        // Send internal notification to CEO
+        const ceoUserId = process.env.CEO_USER_ID || 'ceo-001'; // This should be configured
+        internalNotificationSystem.notifySaleCreated(saleData, ceoUserId)
+            .then((notifResult: any) => {
+                if (notifResult.success) {
+                    console.log('✅ Internal sale notification sent to CEO');
+                } else {
+                    console.log('⚠️ Internal sale notification failed:', notifResult.error);
+                }
+            })
+            .catch((error: any) => {
+                console.error('❌ Internal sale notification error:', error);
+            });
 
         return NextResponse.json({
             success: true,

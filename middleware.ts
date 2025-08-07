@@ -28,8 +28,10 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/test-email') ||
     pathname.startsWith('/public') ||
     pathname === '/login' ||
+    pathname === '/email-test' ||
     pathname === '/favicon.ico' ||
     pathname === '/'
   ) {

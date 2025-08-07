@@ -61,7 +61,7 @@ export default function EditSalePage() {
     const { toast } = useToast();
     const router = useRouter();
     const params = useParams();
-    const saleId = params.id as string;
+    const saleId = params?.id ? (Array.isArray(params.id) ? params.id[0] : params.id) : null;
 
     // Utility function to get auth token
     const getAuthToken = () => {
@@ -77,6 +77,11 @@ export default function EditSalePage() {
     }, [saleId]);
 
     const fetchSaleData = async () => {
+        if (!saleId) {
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
             const token = getAuthToken();
@@ -265,6 +270,20 @@ export default function EditSalePage() {
         }
         return `${amount.toLocaleString('fa-IR')} ${currency}`;
     };
+
+    if (!saleId) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold font-vazir">شناسه فروش نامعتبر</h2>
+                    <p className="text-muted-foreground font-vazir mt-2">شناسه فروش مورد نظر نامعتبر است</p>
+                    <Button onClick={() => router.push('/dashboard/sales')} className="mt-4 font-vazir">
+                        بازگشت به لیست فروش‌ها
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     if (loading) {
         return (

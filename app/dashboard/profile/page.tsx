@@ -196,9 +196,67 @@ export default function ProfilePage() {
         }
     };
 
-    const handleUploadImage = () => {
-        // در اینجا منطق آپلود تصویر قرار می‌گیرد
-        alert('این قابلیت در نسخه بعدی اضافه خواهد شد');
+    const handleUploadImageClick = () => {
+        const fileInput = document.getElementById('avatar-upload-settings') as HTMLInputElement;
+        fileInput?.click();
+    };
+
+    const handleUploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // بررسی نوع فایل
+        if (!file.type.startsWith('image/')) {
+            toast({
+                title: "خطا",
+                description: "لطفاً یک فایل تصویری انتخاب کنید",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        // بررسی سایز فایل (حداکثر 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast({
+                title: "خطا",
+                description: "حجم فایل نباید بیشتر از 5 مگابایت باشد",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            const response = await fetch('/api/profile/avatar', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast({
+                    title: "موفق",
+                    description: "تصویر پروفایل با موفقیت به‌روزرسانی شد"
+                });
+                fetchProfile(); // refresh profile data
+            } else {
+                toast({
+                    title: "خطا",
+                    description: data.message || "خطا در آپلود تصویر",
+                    variant: "destructive"
+                });
+            }
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            toast({
+                title: "خطا",
+                description: "خطا در آپلود تصویر",
+                variant: "destructive"
+            });
+        }
     };
 
     const handleSaveReport = async () => {
@@ -342,14 +400,25 @@ export default function ProfilePage() {
                             height={100}
                             className="rounded-full border-4 border-primary/20"
                         />
-                        <Button
-                            size="icon"
-                            variant="outline"
-                            className="absolute bottom-0 right-0 rounded-full"
-                            onClick={handleUploadImage}
-                        >
-                            <Upload className="h-4 w-4" />
-                        </Button>
+                        <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 cursor-pointer">
+                            <Button
+                                size="icon"
+                                variant="outline"
+                                className="rounded-full"
+                                asChild
+                            >
+                                <div>
+                                    <Upload className="h-4 w-4" />
+                                </div>
+                            </Button>
+                            <input
+                                id="avatar-upload"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleUploadImage}
+                            />
+                        </label>
                     </div>
                     <div className="flex-1">
                         <CardTitle className="text-2xl mb-2 font-vazir">{user.name}</CardTitle>
@@ -663,10 +732,17 @@ export default function ProfilePage() {
                                         height={60}
                                         className="rounded-full border"
                                     />
-                                    <Button variant="outline" onClick={handleUploadImage}>
+                                    <Button variant="outline" onClick={handleUploadImageClick}>
                                         <Upload className="w-4 h-4 ml-2" />
                                         آپلود تصویر جدید
                                     </Button>
+                                    <input
+                                        id="avatar-upload-settings"
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleUploadImage}
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-2">

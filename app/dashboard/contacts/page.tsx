@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
+import type { Contact } from "@/app/types/contacts";
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -43,33 +44,7 @@ interface Company {
   logo_url?: string;
 }
 
-interface Contact {
-  id: string;
-  customer_id?: string;
-  company?: Company;
-  first_name: string;
-  last_name: string;
-  full_name: string;
-  job_title?: string;
-  department?: string;
-  email?: string;
-  phone?: string;
-  mobile?: string;
-  linkedin_url?: string;
-  twitter_url?: string;
-  avatar_url?: string;
-  address?: string;
-  city?: string;
-  country?: string;
-  status: string;
-  is_primary: boolean;
-  source: string;
-  last_contact_date?: string;
-  next_follow_up_date?: string;
-  assigned_to?: string;
-  created_at: string;
-  updated_at: string;
-}
+
 
 interface Activity {
   id: string;
@@ -230,8 +205,9 @@ export default function ContactsPage() {
   };
 
   const filteredContacts = contacts.filter(contact => {
+    const contactName = contact.name || contact.full_name || `${contact.first_name} ${contact.last_name}`.trim();
     const matchesSearch =
-      contact.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contactName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.job_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.company?.name?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -653,7 +629,7 @@ export default function ContactsPage() {
 
                   {/* Source Badge */}
                   <div className="flex items-center justify-between">
-                    <Badge className={`text-xs font-vazir ${getSourceBadgeColor(contact.source)}`}>
+                    <Badge className={`text-xs font-vazir ${getSourceBadgeColor(contact.source || 'other')}`}>
                       {contact.source === 'website' && 'وب‌سایت'}
                       {contact.source === 'referral' && 'معرفی'}
                       {contact.source === 'social_media' && 'شبکه اجتماعی'}
@@ -1009,7 +985,7 @@ export default function ContactsPage() {
                     )}
                     <div className="flex items-center space-x-2 space-x-reverse">
                       <Activity className="w-4 h-4 text-muted-foreground" />
-                      <Badge className={getSourceBadgeColor(selectedContact.source)}>
+                      <Badge className={getSourceBadgeColor(selectedContact.source || 'other')}>
                         {selectedContact.source === 'website' && 'وب‌سایت'}
                         {selectedContact.source === 'referral' && 'معرفی'}
                         {selectedContact.source === 'social_media' && 'شبکه اجتماعی'}

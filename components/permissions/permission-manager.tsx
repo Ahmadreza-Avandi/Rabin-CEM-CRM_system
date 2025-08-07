@@ -185,7 +185,7 @@ export function PermissionManager({ user, onClose }: PermissionManagerProps) {
             },
             {
                 title: 'سایر',
-                modules: modules.filter(m => ['projects', 'calendar', 'reports', 'settings', 'cem_settings'].includes(m.name))
+                modules: modules.filter(m => ['calendar', 'reports', 'settings', 'cem_settings'].includes(m.name))
             }
         ];
 

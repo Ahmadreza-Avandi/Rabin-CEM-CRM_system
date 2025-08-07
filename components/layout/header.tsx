@@ -14,11 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+
 import { useAppStore } from '@/lib/store';
 import { useTheme } from 'next-themes';
 import {
@@ -34,6 +30,7 @@ import {
   Palette,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import NotificationDropdown from '@/components/notifications/NotificationDropdown';
 
 export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -41,9 +38,7 @@ export function Header() {
   const [mounted, setMounted] = useState(false);
   const {
     sidebarCollapsed,
-    setSidebarCollapsed,
-    notifications,
-    markNotificationAsRead
+    setSidebarCollapsed
   } = useAppStore();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -67,20 +62,23 @@ export function Header() {
     }
   };
 
-  const unreadNotifications = notifications.filter(n => !n.read);
+
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/30 bg-card/60 backdrop-blur-2xl supports-[backdrop-filter]:bg-card/40 shadow-sm">
-      <div className="flex h-16 items-center justify-between px-6 bg-gradient-to-l from-primary/5 via-transparent to-secondary/5">
+    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-card/80 backdrop-blur-2xl supports-[backdrop-filter]:bg-card/60 shadow-md">
+      <div className="flex h-16 items-center justify-between px-6 bg-gradient-to-l from-primary/10 via-transparent to-secondary/10 rounded-b-xl">
         <div className="flex items-center space-x-4 space-x-reverse">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="hover:bg-primary/10"
-          >
-            {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
-          </Button>
+          {/* Mobile sidebar toggle - only visible on mobile */}
+          <div className="block lg:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hover:bg-primary/10"
+            >
+              {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            </Button>
+          </div>
 
           <div className="relative">
             <Search className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -129,57 +127,7 @@ export function Header() {
           </DropdownMenu>
 
           {/* Notifications */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative hover:bg-primary/10">
-                <Bell className="h-4 w-4" />
-                {unreadNotifications.length > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs animate-pulse-glow"
-                  >
-                    {unreadNotifications.length}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-2">
-                <h4 className="font-medium leading-none font-vazir">اعلان‌ها</h4>
-                <div className="space-y-2">
-                  {notifications.length === 0 ? (
-                    <p className="text-sm text-muted-foreground font-vazir">اعلان جدیدی وجود ندارد</p>
-                  ) : (
-                    notifications.slice(0, 5).map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={cn(
-                          'flex items-start space-x-2 space-x-reverse rounded-lg p-3 text-sm transition-colors cursor-pointer',
-                          !notification.read && 'bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5 border border-primary/20'
-                        )}
-                        onClick={() => markNotificationAsRead(notification.id)}
-                      >
-                        <div className={cn(
-                          'mt-1 h-2 w-2 rounded-full',
-                          notification.type === 'success' && 'bg-secondary',
-                          notification.type === 'warning' && 'bg-accent',
-                          notification.type === 'error' && 'bg-destructive',
-                          notification.type === 'info' && 'bg-primary'
-                        )} />
-                        <div className="flex-1">
-                          <p className="font-medium font-vazir">{notification.title}</p>
-                          <p className="text-muted-foreground font-vazir">{notification.message}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(notification.timestamp).toLocaleDateString('fa-IR')}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <NotificationDropdown />
 
           {/* User Menu */}
           <DropdownMenu>

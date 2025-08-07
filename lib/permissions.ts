@@ -103,7 +103,7 @@ export const ROUTE_MODULE_MAP: { [key: string]: string } = {
   '/dashboard/interactions': 'tickets',
   '/dashboard/activities': 'activities',
   '/dashboard/tasks': 'tasks',
-  '/dashboard/projects': 'projects',
+
   '/dashboard/calendar': 'calendar',
   '/dashboard/reports': 'reports',
   '/dashboard/insights': 'analytics',

@@ -68,7 +68,6 @@ export async function GET(req: NextRequest) {
                     { id: '3', name: 'contacts', display_name: 'مخاطبین', route: '/dashboard/contacts', icon: 'UserCheck', sort_order: 3 },
                     { id: '4', name: 'coworkers', display_name: 'همکاران', route: '/dashboard/coworkers', icon: 'Users2', sort_order: 4 },
                     { id: '5', name: 'activities', display_name: 'فعالیت‌ها', route: '/dashboard/activities', icon: 'Activity', sort_order: 5 },
-                    { id: '6', name: 'interactions', display_name: 'تعاملات', route: '/dashboard/interactions', icon: 'MessageCircle', sort_order: 6 },
                     { id: '7', name: 'chat', display_name: 'چت', route: '/dashboard/interactions/chat', icon: 'MessageCircle2', sort_order: 7 },
 
                     // Sales Management
@@ -79,19 +78,11 @@ export async function GET(req: NextRequest) {
                     { id: '10', name: 'feedback', display_name: 'بازخوردها', route: '/dashboard/feedback', icon: 'MessageCircle', sort_order: 10 },
                     { id: '11', name: 'feedback_new', display_name: 'ثبت بازخورد', route: '/dashboard/feedback/new', icon: 'MessageCircle', sort_order: 11 },
                     { id: '12', name: 'surveys', display_name: 'نظرسنجی‌ها', route: '/dashboard/surveys', icon: 'ChevronRight', sort_order: 12 },
-                    { id: '13', name: 'csat', display_name: 'CSAT', route: '/dashboard/csat', icon: 'ChevronRight', sort_order: 13 },
-                    { id: '14', name: 'nps', display_name: 'NPS', route: '/dashboard/nps', icon: 'ChevronRight', sort_order: 14 },
-
-                    // Analytics & Insights
-                    { id: '15', name: 'emotions', display_name: 'تحلیل احساسات', route: '/dashboard/emotions', icon: 'Activity', sort_order: 15 },
-                    { id: '16', name: 'insights', display_name: 'بینش‌های خودکار', route: '/dashboard/insights', icon: 'BarChart3', sort_order: 16 },
-                    { id: '17', name: 'touchpoints', display_name: 'نقاط تماس', route: '/dashboard/touchpoints', icon: 'Target', sort_order: 17 },
                     { id: '18', name: 'customer_health', display_name: 'سلامت مشتری', route: '/dashboard/customer-health', icon: 'Activity', sort_order: 18 },
-                    { id: '19', name: 'alerts', display_name: 'هشدارها', route: '/dashboard/alerts', icon: 'Activity', sort_order: 19 },
                     { id: '20', name: 'voice_of_customer', display_name: 'صدای مشتری (VOC)', route: '/dashboard/voice-of-customer', icon: 'MessageCircle', sort_order: 20 },
 
                     // Other
-                    { id: '21', name: 'projects', display_name: 'پروژه‌ها', route: '/dashboard/projects', icon: 'Briefcase', sort_order: 21 },
+
                     { id: '22', name: 'tasks', display_name: 'وظایف', route: '/dashboard/tasks', icon: 'CheckCircle', sort_order: 22 },
                     { id: '23', name: 'calendar', display_name: 'تقویم', route: '/dashboard/calendar', icon: 'Calendar', sort_order: 23 },
                     { id: '24', name: 'reports', display_name: 'گزارش‌ها', route: '/dashboard/reports', icon: 'BarChart3', sort_order: 24 },

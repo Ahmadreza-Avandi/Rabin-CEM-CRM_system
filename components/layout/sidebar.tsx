@@ -27,6 +27,8 @@ import {
   FileText,
   Brain,
   Package,
+  User,
+  Mail,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +36,7 @@ import { Badge } from '@/components/ui/badge';
 interface NavItem {
   title: string;
   href: string;
-  icon: any;
+  icon: React.ComponentType<any>;
   badge?: string;
   children?: NavItem[];
 }
@@ -49,8 +51,8 @@ interface Module {
   parent_id?: string;
 }
 
-// Icon mapping
-const iconMap: { [key: string]: any } = {
+// نقشه آیکون‌ها
+const iconMap: { [key: string]: React.ComponentType<any> } = {
   'Home': LayoutDashboard,
   'LayoutDashboard': LayoutDashboard,
   'Users': Users,
@@ -72,17 +74,19 @@ const iconMap: { [key: string]: any } = {
   'TrendingUp': TrendingUp,
   'FileText': FileText,
   'Brain': Brain,
+  'Package': Package,
+  'Mail': Mail,
 };
 
-// Route to display name mapping for better UX
+// نقشه نام‌های نمایشی روت‌ها
 const routeDisplayNames: { [key: string]: string } = {
   '/dashboard': 'داشبورد',
   '/dashboard/customers': 'مشتریان',
   '/dashboard/contacts': 'مخاطبین',
   '/dashboard/coworkers': 'همکاران',
   '/dashboard/activities': 'فعالیت‌ها',
-  '/dashboard/interactions': 'تعاملات',
-  '/dashboard/interactions/chat': 'چت',
+  '/dashboard/chat': 'چت',
+  '/dashboard/customer-club': 'باشگاه مشتریان',
   '/dashboard/deals': 'معاملات',
   '/dashboard/feedback': 'بازخوردها',
   '/dashboard/reports': 'گزارش‌ها',
@@ -91,16 +95,32 @@ const routeDisplayNames: { [key: string]: string } = {
   '/dashboard/calendar': 'تقویم',
   '/dashboard/profile': 'پروفایل',
   '/dashboard/settings': 'تنظیمات',
-  '/dashboard/projects': 'پروژه‌ها',
+
   '/dashboard/products': 'محصولات',
 };
 
-export function Sidebar() {
+export const ResponsiveSidebar = () => {
   const pathname = usePathname();
   const { sidebarCollapsed, setSidebarCollapsed } = useAppStore();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [navItems, setNavItems] = useState<NavItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Handle mouse enter/leave for desktop
+  const handleMouseEnter = () => {
+    if (window.innerWidth >= 1024) { // lg breakpoint
+      setIsHovered(true);
+      setSidebarCollapsed(false);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (window.innerWidth >= 1024) {
+      setIsHovered(false);
+      setSidebarCollapsed(true);
+    }
+  };
 
   useEffect(() => {
     fetchUserPermissions();
@@ -130,7 +150,7 @@ export function Sidebar() {
         setNavItems(convertedNavItems);
       } else {
         console.error('Failed to fetch permissions:', data.message);
-        // Fallback to basic items
+        // Fallback to default items
         setNavItems([
           {
             title: 'داشبورد',
@@ -138,11 +158,104 @@ export function Sidebar() {
             icon: LayoutDashboard,
           },
           {
+            title: 'مدیریت فروش',
+            href: '/dashboard/sales',
+            icon: TrendingUp,
+            children: [
+              {
+                title: 'معاملات',
+                href: '/dashboard/deals',
+                icon: TrendingUp,
+              }
+            ]
+          },
+          {
+            title: 'مدیریت تجربه مشتری',
+            href: '/dashboard/cem',
+            icon: Users,
+            children: [
+              {
+                title: 'مشتریان',
+                href: '/dashboard/customers',
+                icon: Users,
+              },
+              {
+                title: 'مخاطبین',
+                href: '/dashboard/contacts',
+                icon: Contact,
+              },
+              {
+                title: 'بازخوردها',
+                href: '/dashboard/feedback',
+                icon: MessageCircle,
+              }
+            ]
+          },
+          {
+            title: 'مدیریت همکاران',
+            href: '/dashboard/coworkers',
+            icon: Activity,
+            children: [
+              {
+                title: 'همکاران',
+                href: '/dashboard/coworkers',
+                icon: Users,
+              },
+              {
+                title: 'فعالیت‌ها',
+                href: '/dashboard/activities',
+                icon: Activity,
+              },
+              {
+                title: 'تقویم',
+                href: '/dashboard/calendar',
+                icon: Calendar,
+              }
+            ]
+          },
+          {
+            title: 'چت',
+            href: '/dashboard/chat',
+            icon: MessageCircle,
+          },
+          {
+            title: 'باشگاه مشتریان و ایمیل',
+            href: '/dashboard/customer-club',
+            icon: Users,
+          },
+          {
+            title: '🧪 تست ایمیل',
+            href: '/test-email',
+            icon: Mail,
+          },
+          {
+            title: 'هوش مصنوعی و تحلیل',
+            href: '/dashboard/insights',
+            icon: BarChart3,
+            children: [
+              {
+                title: 'تحلیل گزارشات',
+                href: '/dashboard/insights/reports-analysis',
+                icon: BarChart3,
+              },
+              {
+                title: 'تحلیل صوتی',
+                href: '/dashboard/insights/audio-analysis',
+                icon: Brain,
+              }
+            ]
+          },
+
+          {
+            title: 'محصولات',
+            href: '/dashboard/products',
+            icon: Package,
+          },
+          {
             title: 'پروفایل',
             href: '/dashboard/profile',
-            icon: Contact,
-          }
-        ]);
+            icon: User,
+          }]);
       }
     } catch (error) {
       console.error('Error fetching permissions:', error);
@@ -180,7 +293,7 @@ export function Sidebar() {
 
     // Customer Experience Management modules
     const cemModules = filteredModules.filter(m =>
-      ['customers', 'contacts', 'interactions', 'chat', 'feedback', 'feedback_new', 'surveys', 'csat', 'nps', 'customer_health'].includes(m.name)
+      ['customers', 'contacts', 'feedback', 'feedback_new', 'surveys', 'customer_health', 'customer_club'].includes(m.name)
     );
 
     // Team Management modules
@@ -190,23 +303,21 @@ export function Sidebar() {
 
     // AI & Analytics modules
     const aiAnalyticsModules = filteredModules.filter(m =>
-      ['emotions', 'insights', 'reports_analysis', 'touchpoints', 'alerts', 'voice_of_customer'].includes(m.name)
+      ['reports_analysis'].includes(m.name)
     );
 
-    const settingsModules = filteredModules.filter(m =>
-      ['settings', 'cem_settings'].includes(m.name)
-    );
 
-    // Projects and Products modules
-    const projectModules = filteredModules.filter(m =>
-      ['projects', 'products'].includes(m.name)
+
+    // Products modules
+    const productModules = filteredModules.filter(m =>
+      ['products'].includes(m.name)
     );
 
     const otherModules = filteredModules.filter(m =>
-      !['customers', 'contacts', 'coworkers', 'activities', 'interactions', 'chat',
-        'sales', 'sales_opportunities', 'feedback', 'feedback_new', 'surveys', 'csat', 'nps',
-        'emotions', 'insights', 'reports_analysis', 'touchpoints', 'customer_health', 'alerts', 'voice_of_customer',
-        'settings', 'cem_settings', 'projects', 'products'].includes(m.name)
+      !['customers', 'contacts', 'coworkers', 'activities',
+        'sales', 'sales_opportunities', 'feedback', 'feedback_new', 'surveys', 'customer_health', 'customer_club',
+        'reports_analysis',
+        'products'].includes(m.name)
     );
 
     // Add dashboard first if exists
@@ -218,6 +329,8 @@ export function Sidebar() {
         icon: iconMap[dashboardModule.icon] || LayoutDashboard,
       });
     }
+
+
 
     // Add Sales Management mega menu
     if (salesModules.length > 0) {
@@ -259,15 +372,27 @@ export function Sidebar() {
             href: module.route,
             icon: iconMap[module.icon] || Activity,
           })),
-          // Add reports route as a child
-          {
-            title: routeDisplayNames['/dashboard/reports'] || 'گزارش‌ها',
-            href: '/dashboard/reports',
-            icon: BarChart3,
-          }
+
         ],
       });
     }
+
+    // Add Chat as standalone item
+    navItems.push({
+      title: 'چت',
+      href: '/dashboard/chat',
+      icon: MessageCircle,
+    });
+
+    // Add Customer Club with Email Management
+    navItems.push({
+      title: 'باشگاه مشتریان',
+      href: '/dashboard/customer-club',
+      icon: Users,
+    });
+
+    // Add Test Email (temporary for debugging)
+
 
     // Add AI & Analytics mega menu
     if (aiAnalyticsModules.length > 0) {
@@ -290,18 +415,8 @@ export function Sidebar() {
       });
     }
 
-    // Add Projects group
-    const projectModule = projectModules.find(m => m.name === 'projects');
-    if (projectModule) {
-      navItems.push({
-        title: 'پروژه‌ها',
-        href: '/dashboard/projects',
-        icon: Briefcase,
-      });
-    }
-
     // Add Products group
-    const productsModule = projectModules.find(m => m.name === 'products');
+    const productsModule = productModules.find(m => m.name === 'products');
     if (productsModule) {
       navItems.push({
         title: 'محصولات',
@@ -316,47 +431,14 @@ export function Sidebar() {
       ...cemModules,
       ...teamModules,
       ...aiAnalyticsModules,
-      ...projectModules,
+      ...productModules,
     ].map(m => m.route);
 
     // Add other individual modules (فقط اگر در هیچ مگامنو نباشد)
-    otherModules.forEach(module => {
-      if (
-        !['dashboard', 'settings', 'cem_settings'].includes(module.name) &&
-        !megaMenuRoutes.includes(module.route)
-      ) {
-        navItems.push({
-          title: routeDisplayNames[module.route] || module.display_name,
-          href: module.route,
-          icon: iconMap[module.icon] || LayoutDashboard,
-        });
-      }
-    });
+
 
     // Add Settings group if has modules
-    if (settingsModules.length > 0) {
-      if (settingsModules.length === 1) {
-        // If only one settings module, add directly
-        const module = settingsModules[0];
-        navItems.push({
-          title: routeDisplayNames[module.route] || module.display_name,
-          href: module.route,
-          icon: iconMap[module.icon] || Settings,
-        });
-      } else {
-        // If multiple settings, create group
-        navItems.push({
-          title: 'تنظیمات',
-          href: '/dashboard/settings',
-          icon: Settings,
-          children: settingsModules.map(module => ({
-            title: routeDisplayNames[module.route] || module.display_name,
-            href: module.route,
-            icon: iconMap[module.icon] || Settings,
-          })),
-        });
-      }
-    }
+
 
     return navItems;
   };
@@ -381,8 +463,8 @@ export function Sidebar() {
       <div key={item.title} className="animate-fade-in-up">
         <div
           className={cn(
-            'flex items-center space-x-3 space-x-reverse rounded-xl px-3 py-3 text-sm font-medium transition-all duration-300 group relative overflow-hidden',
-            level > 0 && 'mr-4',
+            'flex items-center space-x-3 rounded-xl px-3 py-3 text-sm font-medium transition-all duration-300 group relative overflow-hidden',
+            level > 0 && 'ml-4',
             isActive
               ? 'bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 text-primary shadow-lg border border-primary/20'
               : 'text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/5 hover:via-secondary/5 hover:to-accent/5 hover:shadow-md',
@@ -397,7 +479,7 @@ export function Sidebar() {
               className="h-auto p-0 text-inherit hover:bg-transparent relative z-10"
               onClick={() => toggleExpanded(item.title)}
             >
-              <div className="flex items-center space-x-3 space-x-reverse">
+              <div className="flex items-center space-x-3">
                 <item.icon className={cn(
                   "h-5 w-5 transition-colors duration-300",
                   isActive ? "text-primary" : "group-hover:text-primary"
@@ -420,7 +502,7 @@ export function Sidebar() {
               </div>
             </Button>
           ) : (
-            <Link href={item.href} className="flex items-center space-x-3 space-x-reverse flex-1 relative z-10">
+            <Link href={item.href} className="flex items-center space-x-3 flex-1 relative z-10">
               <item.icon className={cn(
                 "h-5 w-5 transition-colors duration-300",
                 isActive ? "text-primary" : "group-hover:text-primary"
@@ -461,32 +543,37 @@ export function Sidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed right-0 top-0 z-50 h-full bg-card/95 backdrop-blur-xl border-l border-border/50 transition-all duration-300 lg:relative lg:z-0 shadow-2xl',
-          sidebarCollapsed ? 'w-16' : 'w-72'
+          'fixed left-0 top-0 z-50 h-screen bg-card/95 backdrop-blur-xl border-r border-border/50 transition-all duration-300 shadow-2xl',
+          sidebarCollapsed && !isHovered ? 'w-16' : 'w-72'
         )}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <div className="flex h-16 items-center justify-between border-b border-border/50 px-4 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5">
-          {!sidebarCollapsed && (
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-white" />
-              </div>
+          <div className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-white" />
+            </div>
+            {(!sidebarCollapsed || isHovered) && (
               <h1 className="text-xl font-bold font-vazir bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 داشبورد مدیریت
               </h1>
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="lg:hidden hover:bg-primary/10"
-          >
-            {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
-          </Button>
+            )}
+          </div>
+          {/* Mobile menu button - only visible on mobile */}
+          <div className="block lg:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hover:bg-primary/10"
+            >
+              {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
 
-        <nav className="space-y-2 p-4 overflow-y-auto h-[calc(100vh-4rem)]">
+        <nav className="space-y-2 p-4 overflow-y-auto flex-1 h-[calc(100vh-128px)]">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -496,18 +583,22 @@ export function Sidebar() {
           )}
         </nav>
 
-        {/* Collapse button for desktop */}
-        <div className="hidden lg:block absolute bottom-4 left-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="hover:bg-primary/10"
-          >
-            {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
+        {/* Profile Section */}
+        <div className="p-4 border-t border-border/50">
+          <Link href="/dashboard/profile">
+            <div className={cn(
+              'flex items-center space-x-3 space-x-reverse rounded-xl px-3 py-3 text-sm font-medium transition-all duration-300 group relative overflow-hidden hover:bg-primary/10',
+              pathname === '/dashboard/profile' && 'bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 text-primary shadow-lg border border-primary/20'
+            )}>
+              <User className="h-5 w-5 flex-shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="font-vazir">پروفایل کاربری</span>
+              )}
+            </div>
+          </Link>
         </div>
+
       </div>
     </>
   );
-}
+};

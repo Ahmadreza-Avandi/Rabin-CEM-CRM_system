@@ -138,7 +138,7 @@ export default function CustomerDetailPage() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
-    const customerId = Array.isArray(params.id) ? params.id[0] : params.id;
+    const customerId = params?.id ? (Array.isArray(params.id) ? params.id[0] : params.id) : null;
 
     const [customer, setCustomer] = useState<CustomerData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -179,6 +179,11 @@ export default function CustomerDetailPage() {
     };
 
     const fetchCustomerData = async () => {
+        if (!customerId) {
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
             const token = getAuthToken();
@@ -496,6 +501,20 @@ export default function CustomerDetailPage() {
         if (!dateString) return 'نامشخص';
         return new Date(dateString).toLocaleDateString('fa-IR');
     };
+
+    if (!customerId) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold font-vazir">شناسه مشتری نامعتبر</h2>
+                    <p className="text-muted-foreground font-vazir mt-2">شناسه مشتری مورد نظر نامعتبر است</p>
+                    <Button onClick={() => router.push('/dashboard/customers')} className="mt-4 font-vazir">
+                        بازگشت به لیست مشتریان
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     if (loading) {
         return (

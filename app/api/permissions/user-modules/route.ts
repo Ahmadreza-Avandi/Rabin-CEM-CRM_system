@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
           { module_id: '20', name: 'voice_of_customer', display_name: 'صدای مشتری (VOC)', route: '/dashboard/voice-of-customer', icon: 'MessageCircle', sort_order: 20 },
 
           // Other
-          { module_id: '21', name: 'projects', display_name: 'پروژه‌ها', route: '/dashboard/projects', icon: 'Briefcase', sort_order: 21 },
+
           { module_id: '22', name: 'calendar', display_name: 'تقویم', route: '/dashboard/calendar', icon: 'Calendar', sort_order: 22 },
           { module_id: '23', name: 'reports', display_name: 'گزارش‌ها', route: '/dashboard/reports', icon: 'BarChart3', sort_order: 23 },
           { module_id: '24', name: 'profile', display_name: 'پروفایل', route: '/dashboard/profile', icon: 'User', sort_order: 24 },

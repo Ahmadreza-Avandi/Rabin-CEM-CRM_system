@@ -4,7 +4,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'داشبورد مدیریت - سیستم مدیریت روابط مشتریان',
+  title: 'داشبورد مدیریت - شرکت رابین تجارت خاورمیانه',
   description: 'داشبورد جامع CRM و CEM برای مدیریت روابط و تجربیات مشتریان',
 };
 
@@ -19,7 +19,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="font-vazir">
+      <body className="min-h-screen font-vazir">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
           <Toaster />

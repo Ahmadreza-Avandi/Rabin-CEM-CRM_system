@@ -20,12 +20,15 @@ const routeNames: { [key: string]: string } = {
     '/dashboard/calendar': 'تقویم',
     '/dashboard/profile': 'پروفایل',
     '/dashboard/settings': 'تنظیمات',
-    '/dashboard/projects': 'پروژه‌ها و محصولات',
-    '/dashboard/projects/products': 'محصولات',
+
 };
 
 export function Breadcrumb() {
     const pathname = usePathname();
+
+    if (!pathname) {
+        return null;
+    }
 
     const pathSegments = pathname.split('/').filter(Boolean);
     const breadcrumbs = pathSegments.map((segment, index) => {
@@ -42,10 +45,10 @@ export function Breadcrumb() {
     }
 
     return (
-        <nav className="flex items-center space-x-2 space-x-reverse text-sm text-muted-foreground mb-6">
+        <nav className="flex items-center space-x-2 space-x-reverse text-sm text-muted-foreground mb-6 bg-blue-100/80 dark:bg-blue-950/20 px-4 py-2 rounded-xl shadow-sm border border-blue-200/50 dark:border-blue-800/30 backdrop-blur-sm">
             <Link
                 href="/dashboard"
-                className="flex items-center hover:text-primary transition-colors"
+                className="flex items-center text-blue-600 dark:text-blue-400 hover:text-primary transition-colors"
             >
                 <Home className="h-4 w-4" />
             </Link>
@@ -54,13 +57,13 @@ export function Breadcrumb() {
                 <div key={breadcrumb.path} className="flex items-center space-x-2 space-x-reverse">
                     <ChevronLeft className="h-4 w-4" />
                     {breadcrumb.isLast ? (
-                        <span className="font-medium text-foreground font-vazir">
+                        <span className="font-medium text-blue-800 dark:text-blue-300 font-vazir">
                             {breadcrumb.name}
                         </span>
                     ) : (
                         <Link
                             href={breadcrumb.path}
-                            className="hover:text-primary transition-colors font-vazir"
+                            className="text-blue-600 dark:text-blue-400 hover:text-primary transition-colors font-vazir"
                         >
                             {breadcrumb.name}
                         </Link>

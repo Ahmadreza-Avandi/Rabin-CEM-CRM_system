@@ -1,0 +1,44 @@
+FROM alpine:latest
+
+# Install required packages
+RUN apk add --no-cache \
+    mysql-client \
+    curl \
+    unzip \
+    bash \
+    dcron \
+    tzdata \
+    gzip
+
+# Set timezone to Iran
+ENV TZ=Asia/Tehran
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Download and install rclone
+RUN curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip && \
+    unzip rclone-current-linux-amd64.zip && \
+    cd rclone-*-linux-amd64 && \
+    cp rclone /usr/bin/ && \
+    chown root:root /usr/bin/rclone && \
+    chmod 755 /usr/bin/rclone && \
+    cd .. && \
+    rm -rf rclone-*
+
+# Create directories
+RUN mkdir -p /backups /root/.config/rclone
+
+# Copy backup script and config
+COPY backup.sh /usr/local/bin/backup.sh
+COPY rclone.conf /root/.config/rclone/rclone.conf
+
+# Make backup script executable
+RUN chmod +x /usr/local/bin/backup.sh
+
+# Setup cron job for nightly backup at 2 AM Iran time
+RUN echo "0 2 * * * /usr/local/bin/backup.sh >> /var/log/backup.log 2>&1" > /etc/crontabs/root
+
+# Create log file
+RUN touch /var/log/backup.log
+
+# Start cron daemon
+CMD ["crond", "-f", "-d", "8"]

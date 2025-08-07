@@ -33,12 +33,14 @@ export function Container({
 }: ContainerProps) {
     return (
         <div className={cn(
-            'mx-auto w-full',
+            'mx-auto w-full min-h-screen bg-gradient-to-br from-green-200 via-emerald-100 to-teal-100 dark:from-green-900/40 dark:via-emerald-900/30 dark:to-teal-900/40',
             sizeClasses[size],
             paddingClasses[padding],
             className
         )}>
-            {children}
+            <div className="backdrop-blur-[2px]">
+                {children}
+            </div>
         </div>
     );
 }

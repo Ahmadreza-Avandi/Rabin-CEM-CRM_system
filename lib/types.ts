@@ -48,7 +48,7 @@ export interface Customer {
   satisfactionScore?: number;
   salesPipeline?: SalesPipelineStage;
   tags?: string[];
-  projects?: string[];
+
   assignedTo?: string;
   potentialValue?: number;
   priority?: 'low' | 'medium' | 'high';
