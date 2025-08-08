@@ -11,8 +11,8 @@ import { Label } from '@/components/ui/label';
 
 export default function LoginPage() {
     const router = useRouter();
-    const [email, setEmail] = useState('ceo@company.com'); // Default CEO email for testing
-    const [password, setPassword] = useState('admin123'); // Default password for testing
+    const [email, setEmail] = useState(''); // Default CEO email for testing
+    const [password, setPassword] = useState(''); // Default password for testing
     const [error, setError] = useState('');
     const [isLoggingIn, setIsLoggingIn] = useState(false);
 

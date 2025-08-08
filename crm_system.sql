@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Aug 07, 2025 at 03:36 PM
+-- Generation Time: Aug 08, 2025 at 07:21 AM
 -- Server version: 11.8.2-MariaDB
 -- PHP Version: 8.4.10
 
@@ -44,13 +44,6 @@ CREATE TABLE `activities` (
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `activities`
---
-
-INSERT INTO `activities` (`id`, `customer_id`, `deal_id`, `type`, `title`, `description`, `start_time`, `end_time`, `duration`, `performed_by`, `outcome`, `location`, `notes`, `created_at`, `updated_at`) VALUES
-('e04db928-337f-4f85-acfe-798906a657b4', 'bf0518c3-41af-412e-a567-8dcf11532c3b', NULL, 'email', 'aaee', 'affawfw', '2025-08-07 09:38:01', NULL, NULL, 'ceo-001', 'successful', NULL, NULL, '2025-08-07 06:08:01', '2025-08-07 09:38:01');
 
 -- --------------------------------------------------------
 
@@ -133,6 +126,7 @@ CREATE TABLE `chat_conversations` (
   `avatar_url` varchar(500) DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `last_message_id` varchar(36) DEFAULT NULL,
+  `last_message` text DEFAULT NULL,
   `last_message_at` timestamp NULL DEFAULT current_timestamp(),
   `created_by` varchar(36) NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
@@ -177,11 +171,21 @@ CREATE TABLE `chat_group_members` (
 
 CREATE TABLE `chat_messages` (
   `id` varchar(36) NOT NULL DEFAULT uuid(),
+  `conversation_id` varchar(36) NOT NULL,
   `sender_id` varchar(36) NOT NULL,
   `receiver_id` varchar(36) NOT NULL,
   `message` text NOT NULL,
+  `message_type` enum('text','image','file','system') DEFAULT 'text',
   `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `read_at` timestamp NULL DEFAULT NULL
+  `read_at` timestamp NULL DEFAULT NULL,
+  `is_edited` tinyint(1) DEFAULT 0,
+  `is_deleted` tinyint(1) DEFAULT 0,
+  `edited_at` timestamp NULL DEFAULT NULL,
+  `sent_at` timestamp NULL DEFAULT current_timestamp(),
+  `reply_to_id` varchar(36) DEFAULT NULL,
+  `file_url` varchar(500) DEFAULT NULL,
+  `file_name` varchar(255) DEFAULT NULL,
+  `file_size` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -286,13 +290,6 @@ CREATE TABLE `contacts` (
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `contacts`
---
-
-INSERT INTO `contacts` (`id`, `company_id`, `first_name`, `last_name`, `job_title`, `department`, `email`, `phone`, `mobile`, `linkedin_url`, `twitter_url`, `address`, `city`, `country`, `postal_code`, `birth_date`, `notes`, `tags`, `custom_fields`, `avatar_url`, `status`, `is_primary`, `source`, `last_contact_date`, `assigned_to`, `created_by`, `created_at`, `updated_at`) VALUES
-('5973c96b-cbfd-450f-9470-67da038bf7e5', NULL, 'afafa', 'Avandi', 'waaa', 'faefae', 'ahmadreza.avandi@gmail.com', '234', '422', NULL, NULL, NULL, NULL, 'ایران', NULL, NULL, NULL, NULL, NULL, NULL, 'active', 0, 'other', NULL, 'ceo-001', 'ceo-001', '2025-08-07 06:04:50', '2025-08-07 06:04:50');
-
 -- --------------------------------------------------------
 
 --
@@ -353,13 +350,6 @@ CREATE TABLE `customers` (
   `last_contact_date` timestamp NULL DEFAULT NULL,
   `contact_attempts` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `customers`
---
-
-INSERT INTO `customers` (`id`, `name`, `email`, `phone`, `website`, `address`, `city`, `state`, `country`, `postal_code`, `industry`, `company_size`, `annual_revenue`, `status`, `segment`, `priority`, `assigned_to`, `total_tickets`, `satisfaction_score`, `potential_value`, `actual_value`, `created_at`, `updated_at`, `last_interaction`, `last_contact_date`, `contact_attempts`) VALUES
-('bf0518c3-41af-412e-a567-8dcf11532c3b', 'Ahmadrerza Avandi', 'ahmadreza.avandi@gmail.com', '232', NULL, '13hectari koche onsori', 'bandarabbas', 'هرمزگان', 'Iran', NULL, NULL, NULL, 1211.00, 'prospect', 'small_business', 'medium', 'ceo-001', 0, NULL, NULL, 0.00, '2025-08-07 09:35:09', '2025-08-07 09:35:09', NULL, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -461,14 +451,6 @@ CREATE TABLE `daily_reports` (
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='گزارش‌های روزانه کاربران';
 
---
--- Dumping data for table `daily_reports`
---
-
-INSERT INTO `daily_reports` (`id`, `user_id`, `report_date`, `persian_date`, `work_description`, `completed_tasks`, `working_hours`, `challenges`, `achievements`, `status`, `created_at`, `updated_at`) VALUES
-('487b3762-84c1-4616-85e5-03d4ed7014d8', 'cf95fa0d-c06d-45e6-ae06-f5e02126f436', '2025-07-29', '۱۴۰۴/۰۵/۰۷', 'اضافه کردن بخش تحلیل صوتی و هوش مصنوعی به پروژه \nنوشتن تابع دستورات صوتی \nتست api پروژه \nکامل کردن بخش ثبت فروش \n', '[]', 7.00, 'ارور مشکل به هوش مصنوعی', 'ساخت دمو ماژول صوتی و کامل شدن بخش فروش', 'submitted', '2025-07-29 06:34:27', '2025-07-29 06:34:27'),
-('6a97413c-c8d3-4cff-b524-e836c4214ef4', 'cf95fa0d-c06d-45e6-ae06-f5e02126f436', '2025-08-04', '۱۴۰۴/۰۵/۱۳', 'امروز تقریبا باگ ها و پروژه های سیستم رو فیکس کردم', '[]', 8.00, 'باگ های توی دیتابیس', 'نزدیک شدن به دیپلوی پروژه', 'submitted', '2025-08-04 05:23:08', '2025-08-04 05:23:08');
-
 -- --------------------------------------------------------
 
 --
@@ -530,14 +512,6 @@ CREATE TABLE `deal_stage_history` (
   `changed_by` varchar(36) DEFAULT NULL,
   `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `deal_stage_history`
---
-
-INSERT INTO `deal_stage_history` (`id`, `deal_id`, `stage_id`, `entered_at`, `exited_at`, `changed_by`, `notes`) VALUES
-('130c97b9-b755-418e-97ad-ba68402a789f', '953c1fb6-7461-4c4d-a12a-462049c014e4', '252c6e8d-69f8-11f0-92a7-e251ebaa91d8', '2025-07-29 05:14:14', NULL, 'ceo-001', NULL),
-('ef99a0d6-7f6b-4eea-9bc4-806d433a75ab', '6eca69fa-389e-4663-8166-3bbee76b2e52', '252c6e8d-69f8-11f0-92a7-e251ebaa91d8', '2025-07-29 06:16:53', NULL, 'ceo-001', NULL);
 
 -- --------------------------------------------------------
 
@@ -765,6 +739,26 @@ CREATE TABLE `note_tags` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` varchar(36) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `related_id` varchar(36) DEFAULT NULL,
+  `related_type` varchar(50) DEFAULT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `permissions`
 --
 
@@ -842,13 +836,6 @@ CREATE TABLE `products` (
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `products`
---
-
-INSERT INTO `products` (`id`, `name`, `category`, `description`, `specifications`, `base_price`, `currency`, `is_active`, `inventory`, `created_at`, `updated_at`) VALUES
-('cca65786-73a9-4190-8868-47ab57d9c2f5', '1vaefaee', 'nala', 'adafae', 'aeefaefae', 1000000.00, 'IRR', 1, 999, '2025-08-07 09:36:21', '2025-08-07 09:36:21');
 
 -- --------------------------------------------------------
 
@@ -1158,14 +1145,6 @@ CREATE TABLE `task_assignees` (
   `assigned_by` varchar(36) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `task_assignees`
---
-
-INSERT INTO `task_assignees` (`id`, `task_id`, `user_id`, `assigned_at`, `assigned_by`) VALUES
-('06a7d614-276c-44ef-b73e-6716bff527f4', '47d45eb3-c0dc-4de5-a04d-ee44c61dcb49', 'ceo-001', '2025-07-25 20:11:22', 'ceo-001'),
-('2f6d5c0c-22dc-44bb-bf23-f45df366091d', '4217391f-0bf0-42be-ae1c-59c763cdec0b', 'cf95fa0d-c06d-45e6-ae06-f5e02126f436', '2025-08-04 05:19:42', 'ceo-001');
-
 -- --------------------------------------------------------
 
 --
@@ -1289,7 +1268,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `password`, `role`, `status`, `avatar`, `avatar_url`, `phone`, `team`, `last_active`, `last_login`, `created_at`, `updated_at`, `created_by`) VALUES
-('ceo-001', 'مهندس کریمی', 'ceo@company.com', '$2b$10$ZD73doDN4r.HxJ5LPjGnXOOgRcYTBi3aLQjyR/WbL.J0F41lY1YcK', 'admin123', 'ceo', 'active', NULL, NULL, '', NULL, '2025-07-20 04:57:32', '2025-08-07 09:33:43', '2025-07-20 04:57:32', '2025-08-07 09:33:43', NULL);
+('ceo-001', 'مهندس کریمی', 'Robintejarat@gmail.com', '$2b$10$ZD73doDN4r.HxJ5LPjGnXOOgRcYTBi3aLQjyR/WbL.J0F41lY1YcK', 'admin123', 'ceo', 'active', NULL, NULL, '', NULL, '2025-07-20 04:57:32', '2025-08-07 19:34:34', '2025-07-20 04:57:32', '2025-08-08 07:02:14', NULL);
 
 -- --------------------------------------------------------
 
@@ -1748,6 +1727,16 @@ ALTER TABLE `notes`
 ALTER TABLE `note_tags`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_note_tag` (`note_id`,`tag`);
+
+--
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_is_read` (`is_read`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_user_unread` (`user_id`,`is_read`);
 
 --
 -- Indexes for table `permissions`

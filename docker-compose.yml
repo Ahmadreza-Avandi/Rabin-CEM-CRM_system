@@ -20,12 +20,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env.production
     environment:
-      - DATABASE_URL=mysql://root:1234@mysql:3306/crm_system
-      - DATABASE_HOST=mysql
       - NODE_ENV=production
     volumes:
-      - .:/app
+      - ./public/uploads:/app/public/uploads
       - /app/node_modules
       - /app/.next
     depends_on:
